@@ -1,12 +1,12 @@
 from fastmcp import FastMCP
 
+from database import DatabaseManger
+
+db_manager = DatabaseManger("mcp-context-users", "users")
+print("Connecting to the database...")
+db_manager.connect()
+
 mcp = FastMCP("mcp-context", stateless_http=True)
-userTestInfo = {
-        "name": "John Doe",
-        "age": 20,
-        "email": "john.doe@example.com", 
-        "current_project": "AI powered productivity browser extension",
-    }
 
 
 @mcp.tool()
@@ -22,10 +22,14 @@ def get_user_information(query:str):
     '''
 
     print("Received query: ", query)
-    
 
-    # just return the test information
-    return f"Name: {userTestInfo['name']}, Age: {userTestInfo['age']}, Email: {userTestInfo['email']}, Current Project: {userTestInfo['current_project']}"
+    # fetch user information from the database
+    userInfo = db_manager.get_user_information("test_user_1")
+    print("User information fetched: ", userInfo)
+    if userInfo:
+        return userInfo
+    else:
+        return "User information not found."
 
 @mcp.tool()
 def update_user_information(field:str, value:str):
