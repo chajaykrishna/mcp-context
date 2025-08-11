@@ -15,7 +15,7 @@ class DatabaseManger:
 
     def connect(self):
         try:
-            self.client = MongoClient(os.getenv("MONGO_URI", "mongodb+srv://chajaykrishna5:G6g1iDGbPVo7X5BG@cluster0.irgo9zq.mongodb.net/"))
+            self.client = MongoClient(os.getenv("MONGO_URI", "mongodb://localhost:27017/"))
             print("Database connection established.")
         except ConnectionFailure as e:
             print(f"Failed to connect to the database: {e}")

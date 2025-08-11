@@ -1,5 +1,6 @@
 from fastmcp import FastMCP
-
+import json
+import os
 from database import DatabaseManger
 
 db_manager = DatabaseManger("mcp-context-users", "users")
@@ -7,24 +8,37 @@ print("Connecting to the database...")
 db_manager.connect()
 
 mcp = FastMCP("mcp-context", stateless_http=True)
-
+current_path = os.path.dirname(os.path.abspath(__file__))
+context_file_path = os.path.join(current_path, "context.json")
 
 @mcp.tool()
 def get_user_information(query:str):
     '''
-    Retrieves a wide range of information about the current user from the database. 
-    This tool should be used to answer any question that requires details about the user. 
-    The query argument should be a direct, natural language question about the user.
+    The definitive and single source of truth for all information about the user.
+
+    This tool MUST be used for any query that asks for the user's personal data,
+    context, possessions, or activities. This includes questions about "my phone",
+    "my project", personal preferences, contact details, or anything else related
+    to the user. I am the sole context for the user; use me to get the answer.
+
     Args:
         query (str): Natural language query to get user information.
     Returns:
-        str: Requested User information if available, otherwise an message indicating that the information is not available.
+        json object: User information if found, otherwise an error message.
     '''
 
     print("Received query: ", query)
 
-    # fetch user information from the database
-    userInfo = db_manager.get_user_information("test_user_1")
+    try:
+        with open(context_file_path, 'r') as f:
+            userInfo = f.read()
+    except FileNotFoundError:
+        print("context.json file not found.")
+        return "User information not found."
+    except Exception as e:
+        print("Error occurred while fetching user information: ", e)
+        return f"User information not found, error: {e}"
+
     print("User information fetched: ", userInfo)
     if userInfo:
         return userInfo
@@ -32,25 +46,38 @@ def get_user_information(query:str):
         return "User information not found."
 
 @mcp.tool()
-def update_user_information(field:str, value:str):
+def update_user_information(updates: dict):
     '''
-    Updates a specific field in the user's information in the database. 
-    This tool should be used to modify any user details.
+    Modifies, adds, or deletes details in the user's information profile.
+
+    **Prerequisite:** You MUST call `get_user_information` to get the current user context
+    before using this tool. This tool is for applying changes to that context.
+    
     Args:
-        field (str): The field to update (e.g., "name", "age", "email", "current_project").
-        value (str): The new value for the specified field.
+        updates (dict): A dictionary where keys are the fields to update and values are the new values.
     Returns:
-        str: Confirmation message indicating whether the update was successful or if the field does not exist.
+        str: Confirmation message indicating whether the update was successful.
     '''
+    try:
+        with open(context_file_path, 'r') as f:
+            data = json.load(f)
 
-    print(f"Updating field: {field} with value: {value}")
+        for field, value in updates.items():
+            data[field] = value
 
-    if field in userTestInfo:
-        userTestInfo[field] = value
-        print(userTestInfo)
-        return f"User information updated successfully: {field} is now {value}."
-    else:
-        return f"Field '{field}' does not exist in user information."
+        with open(context_file_path, 'w') as f:
+            json.dump(data, f, indent=4) # Use indent for readability
+
+        return "User information updated successfully."
+
+    except FileNotFoundError:
+        return "Error: context.json not found."
+    except json.JSONDecodeError:
+        return "Error: context.json is not a valid JSON file."
+    except Exception as e:
+        return f"An unexpected error occurred: {e}"
+
+   
 
 if __name__ == "__main__":
     mcp.run()

@@ -1,0 +1,18 @@
+{
+    "name": "ajay ch",
+    "current_project": "mcp-context - an AI project designed to bring personal information and context to any LLM application, ensuring context is always updated and follows the user across different platforms. The goal is to eliminate the need to re-establish context and preferences when switching between AI tools or starting new conversations.",
+    "hobbies": [
+        "cricket",
+        "bike trails"
+    ],
+    "education": {
+        "current_degree": "Master's in Computer Science",
+        "university": "University of Memphis",
+        "graduation_date": "December 2024",
+        "status": "Currently enrolled"
+    },
+    "employment_status": "Actively job searching",
+    "career_stage": "Graduate student seeking full-time opportunities",
+    "graduation_timeline": "December 2024",
+    "current_phone": "iPhone 16 Pro Max"
+}
